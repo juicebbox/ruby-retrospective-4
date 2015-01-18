@@ -21,24 +21,32 @@ class NumberSet
   end
 
   def [] (filter)
-    NumberSet.new(filter.apply_filter(@array))
+    @array.each_with_object(NumberSet.new) do |number, new_set|
+      new_set << number if filter.satisfied_by? number
+    end
   end
 end
 
 class Filter
 
   def initialize(&block)
-    @block = block
+    @filter = block
+  end
+
+  def satisfied_by?(number)
+    @filter.call number
   end
 
   def apply_filter(array)
     array.select(&@block)
   end
 
-  def & (filter)
+  def & (other)
+    Filter.new { |number| satisfied_by? number and other.satisfied_by? number }
   end
 
-  def | (filter)
+  def | (other)
+     Filter.new { |number| satisfied_by? number or other.satisfied_by? number }
   end
 end
 
@@ -46,55 +54,21 @@ end
 
 class TypeFilter < Filter
   def initialize(type)
-    @type = type
-  end
-
-  def check_type (number)
-    case @type
-      when :integer
-        number.is_a? Integer
-      when :complex
-        number.is_a? Complex
-      when :real
-        number.is_a? Rational or number.is_a? Float
+    case type
+    when :integer then super() { |number| number.integer? }
+    when :complex then super() { |number| not number.real? }
+    when :real    then super() { |number| number.real? and not number.integer? }
     end
-  end
-
-  def apply_filter(array)
-    filtered_array = []
-    array.each do |number|
-      if check_type(number)
-        filtered_array << number
-      end
-    end
-    filtered_array
   end
 end
 
-
 class SignFilter < Filter
   def initialize(sign)
-    @sign = sign
-  end
-
-  def check_sign (number)
-    if @sign == :positive
-        number > 0
-    elsif @sign == :non_positive
-        number <= 0
-    elsif @sign == :negative
-        number < 0
-    elsif @sign == :non_negative
-        number >= 0
+    case sign
+    when :positive     then super() { |number| number > 0 }
+    when :negative     then super() { |number| number < 0 }
+    when :non_positive then super() { |number| number <= 0 }
+    when :non_negative then super() { |number| number >= 0 }
     end
-  end
-  def apply_filter(array)
-    filtered_array = []
-    array.each do |number|
-      if check_sign(number)
-        filtered_array << number
-      end
-    end
-    filtered_array
   end
 end
