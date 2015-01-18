@@ -1,22 +1,17 @@
 def series(type, target)
-  if type == 'fibonacci' then fibonacci(target)
-  elsif type == 'lucas' then lucas(target)
-  elsif type == 'summed' then fibonacci(target) + lucas(target)
+  return fibonacci(target) if type.eql? 'fibonacci'
+  return lucas(target) if type.eql? 'lucas'
+  return fibonacci(target) + lucas(target) if type.eql? 'summed'
   end
 end
 
 def fibonacci(target)
-  number = [1,1]
-  for index in 2..target
-    number[index] = number[index-1] + number[index-2]
-  end
-  number[target-1]
+  return 1 if (1..2).include? target
+  fibonacci(target - 1) + fibonacci(target - 2) if target > 2
 end
 
 def lucas(target)
-  number = [2,1]
-  for index in 2..target
-    number[index] = number[index-1] + number[index-2]
-  end
-  number[target-1]
+  return 2 if target.eql?1
+  return 1 if target.eql?2
+  lucas(target - 1) + lucas(target - 2) if number > 2
 end
